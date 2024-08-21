@@ -275,7 +275,7 @@ def reset_chat():
 
 enabled_file_upload_message = False
 def load_chat_screen(assistant_id, assistant_title):
-    add_rtl_css()  # Add RTL CSS
+    add_custom_css()  # Add RTL CSS
     
     # Add sidebar with image and text
     with st.sidebar:
