@@ -295,19 +295,13 @@ def load_chat_screen(assistant_id, assistant_title):
 
     st.title(assistant_title if assistant_title else "")
     
-    user_msg = st.text_input(
-        "טקסט לבדיקה",
-        key="chat_input",
-        on_change=disable_form,
-        disabled=st.session_state.in_progress,
-        placeholder="טקסט לבדיקה...",
+    user_msg = st.chat_input(
+        "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
     )
     
+    
     if user_msg:
-        # Display the existing chat history
         render_chat()
-        
-        # Add and display the user's new message
         with st.chat_message("user"):
             st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
@@ -318,11 +312,8 @@ def load_chat_screen(assistant_id, assistant_title):
         run_stream(user_msg, file, assistant_id)
         st.session_state.in_progress = False
         st.session_state.tool_call = None
-        
-        # Rerun the Streamlit app to update the display
         st.rerun()
-        
-    # Display the entire chat history
+
     render_chat()
 
 
