@@ -53,7 +53,7 @@ else:
     client = openai.OpenAI(api_key=openai_api_key)
 
 # Add custom CSS for RTL support
-def add_rtl_css():
+def add_custom_css():
     st.markdown("""
     <style>
     .stTextInput input {
@@ -67,6 +67,10 @@ def add_rtl_css():
     .stChatMessageContent {
         direction: rtl;
         text-align: right;
+    }
+    .centered-text {
+        text-align: center;
+        direction: rtl;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -273,6 +277,18 @@ enabled_file_upload_message = False
 def load_chat_screen(assistant_id, assistant_title):
     add_rtl_css()  # Add RTL CSS
     
+    # Add sidebar with image and text
+    with st.sidebar:
+        st.image("Fby2Jxqn_400x400.jpg", use_column_width=True)
+        st.markdown("""
+        <div class="centered-text">
+        <p>Experimental AI-based bot for political/historical fact-checking.</p>
+        <p>בוט נסיוני מבוסס בינה מלאכותית לבדיקת עובדות בתחום הפוליטי/היסטורי.</p>
+        <p>Developed and maintained by civax</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+
     if enabled_file_upload_message:
         uploaded_file = st.sidebar.file_uploader(
             enabled_file_upload_message,
