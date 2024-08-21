@@ -52,6 +52,26 @@ if azure_openai_endpoint and azure_openai_key:
 else:
     client = openai.OpenAI(api_key=openai_api_key)
 
+# Add custom CSS for RTL support
+def add_rtl_css():
+    st.markdown("""
+    <style>
+    .stTextInput input {
+        direction: rtl;
+        text-align: right;
+    }
+    .stChatMessage {
+        direction: rtl;
+        text-align: right;
+    }
+    .stChatMessageContent {
+        direction: rtl;
+        text-align: right;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    
 
 class EventHandler(AssistantEventHandler):
     @override
@@ -221,7 +241,7 @@ def handle_uploaded_file(uploaded_file):
 def render_chat():
     for chat in st.session_state.chat_log:
         with st.chat_message(chat["name"]):
-            st.markdown(chat["msg"], True)
+            st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
 
 
 if "tool_call" not in st.session_state:
@@ -251,6 +271,8 @@ def reset_chat():
 
 enabled_file_upload_message = False
 def load_chat_screen(assistant_id, assistant_title):
+    add_rtl_css()  # Add RTL CSS
+    
     if enabled_file_upload_message:
         uploaded_file = st.sidebar.file_uploader(
             enabled_file_upload_message,
@@ -278,7 +300,7 @@ def load_chat_screen(assistant_id, assistant_title):
     if user_msg:
         render_chat()
         with st.chat_message("user"):
-            st.markdown(user_msg, True)
+            st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
 
         file = None
