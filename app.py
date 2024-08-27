@@ -225,13 +225,6 @@ def main():
     # Simplify this function to use a single assistant title
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
     
-    if (authentication_required and "credentials" in st.secrets and authenticator is not None):
-        authenticator.login()
-        if not st.session_state["authentication_status"]:
-            login()
-            return
-        else:
-            authenticator.logout(location="sidebar")
 
     load_chat_screen(assistant_title)
     
