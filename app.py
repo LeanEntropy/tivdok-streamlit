@@ -14,6 +14,10 @@ import streamlit_authenticator as stauth
 # Perplexity
 #from openai import OpenAI
 
+def str_to_bool(str_input):
+    if not isinstance(str_input, str):
+        return False
+    return str_input.lower() == "true"
 
 
 load_dotenv()
@@ -36,10 +40,6 @@ if authentication_required and "credentials" in st.secrets:
         
         
 
-def str_to_bool(str_input):
-    if not isinstance(str_input, str):
-        return False
-    return str_input.lower() == "true"
 
 
 # Load environment variables
