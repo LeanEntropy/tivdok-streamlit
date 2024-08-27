@@ -37,7 +37,7 @@ instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 client = None
 
     #client = openai.OpenAI(api_key=openai_api_key)
-    client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
+client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
 
 # Add custom CSS for RTL support
