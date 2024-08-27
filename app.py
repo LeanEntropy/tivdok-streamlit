@@ -18,6 +18,23 @@ import streamlit_authenticator as stauth
 
 load_dotenv()
 
+# Add this line near other environment variable definitions
+authentication_required = str_to_bool(os.environ.get("AUTHENTICATION_REQUIRED", "False"))
+
+
+authenticator = None
+if authentication_required and "credentials" in st.secrets:
+    try:
+        authenticator = stauth.Authenticate(
+            st.secrets["credentials"],
+            st.secrets["cookie"]["name"],
+            st.secrets["cookie"]["key"],
+            st.secrets["cookie"]["expiry_days"],
+        )
+    except Exception as e:
+        st.error(f"Error initializing authenticator: {str(e)}")
+        
+        
 
 def str_to_bool(str_input):
     if not isinstance(str_input, str):
@@ -38,6 +55,8 @@ client = None
 
     #client = openai.OpenAI(api_key=openai_api_key)
 client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
+
+
 
 
 # Add custom CSS for RTL support
@@ -176,12 +195,19 @@ def disable_form():
     st.session_state.in_progress = True
 
 
+#def login():
+#    if st.session_state["authentication_status"] is False:
+#        st.error("Username/password is incorrect")
+#    elif st.session_state["authentication_status"] is None:
+#        st.warning("Please enter your username and password")
+
 def login():
-    if st.session_state["authentication_status"] is False:
+    if "authentication_status" not in st.session_state:
+        st.warning("Authentication is not set up properly.")
+    elif st.session_state["authentication_status"] is False:
         st.error("Username/password is incorrect")
     elif st.session_state["authentication_status"] is None:
         st.warning("Please enter your username and password")
-
 
 def reset_chat():
     st.session_state.chat_log = []
@@ -223,17 +249,20 @@ def load_chat_screen(assistant_title):
 def main():
     # Simplify this function to use a single assistant title
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
-    
-    if (authentication_required and "credentials" in st.secrets and authenticator is not None):
-        authenticator.login()
-        if not st.session_state["authentication_status"]:
-            login()
-            return
+
+    if authentication_required:
+        if "credentials" in st.secrets and "authenticator" in globals():
+            authenticator.login()
+            if not st.session_state["authentication_status"]:
+                login()
+                return
+            else:
+                authenticator.logout(location="sidebar")
         else:
-            authenticator.logout(location="sidebar")
+            st.error("Authentication is required but not properly configured.")
+            return
 
     load_chat_screen(assistant_title)
-    
 
 
 if __name__ == "__main__":
