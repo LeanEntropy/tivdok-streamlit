@@ -37,7 +37,7 @@ instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 client = None
 
     #client = openai.OpenAI(api_key=openai_api_key)
-client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
+    client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
 
 # Add custom CSS for RTL support
@@ -83,7 +83,6 @@ def get_perplexity_response(user_input):
     
     
     
-
 
 
 
@@ -156,7 +155,7 @@ def run_stream(user_input, file, selected_assistant_id):
     
     st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
     
-    
+
 
 
 
@@ -225,6 +224,13 @@ def main():
     # Simplify this function to use a single assistant title
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
     
+    if (authentication_required and "credentials" in st.secrets and authenticator is not None):
+        authenticator.login()
+        if not st.session_state["authentication_status"]:
+            login()
+            return
+        else:
+            authenticator.logout(location="sidebar")
 
     load_chat_screen(assistant_title)
     
