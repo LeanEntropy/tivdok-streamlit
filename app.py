@@ -86,7 +86,7 @@ def add_custom_css():
 def get_perplexity_response(user_input):
     try:
         response = client.chat.completions.create(
-            model="pplx-7b-online",  # or another appropriate model
+            model="llama-3-sonar-large-32k-online",  # or another appropriate model
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": user_input}
