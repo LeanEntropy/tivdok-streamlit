@@ -1,20 +1,23 @@
-# gpt-assistants-api-ui
+# Tivdok - Perplexity / ChatGPT based Fact Checker in Hebrew
 
-* 💬 OpenAI Assistants API chat UI
-* 🛠️ It works easily by setting the ASSISTANT IDs
-* 📁 Supports file upload and file download
-* 🏃 Supports Streaming API
-* 👥 Supports multiple Assistant profiles in one place
-* 🪟 Support to Azure OpenA
+
+## gpt-assistants-api-ui
+
+* OpenAI Assistants API chat UI
+* 🛠It works easily by setting the ASSISTANT IDs
+* Supports file upload and file download
+* Supports Streaming API
+* Supports multiple Assistant profiles in one place
+* Support to Azure OpenA
   * ※ Cannot be used until Azure OpenAI Service supports Streaming API
 
 <img width="1459" alt="スクリーンショット 2023-11-20 2 23 51" src="https://github.com/ryo-ma/gpt-assistants-api-ui/assets/6661165/5c288d51-196a-4919-bc4d-dc508146f58a">
 
 ## 🌟 Quick Start
 
-1. 👤 Create an assistant on the OpenAI site & Get assistant ID (https://platform.openai.com/assistants)
-2. 🔑 Get the API key from OpenAI (https://platform.openai.com/api-keys)
-3. ⬇️ Clone the repository
+1. Create an assistant on the OpenAI site & Get assistant ID (https://platform.openai.com/assistants)
+2. Get the API key from OpenAI (https://platform.openai.com/api-keys)
+3. Clone the repository
 
     ```bash
     $ git clone https://github.com/ryo-ma/gpt-assistants-api-ui.git
@@ -41,6 +44,9 @@
 
     # When using multiple assistants, set the following.
     OPENAI_ASSISTANTS='[{"id": "asst_xxx", "title": "Assistants XXX UI"}, {"id": "asst_yyy", "title": "Assistants YYY UI"}]'
+
+    # Perplexity settings
+    PERPLEXITY_API_KEY=""
     ```
     If you use azure instead, set `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_KEY`
 
