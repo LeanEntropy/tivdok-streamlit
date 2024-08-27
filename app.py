@@ -11,6 +11,10 @@ from typing_extensions import override
 from dotenv import load_dotenv
 import streamlit_authenticator as stauth
 
+# Perplexity
+#from openai import OpenAI
+
+
 load_dotenv()
 
 
@@ -21,7 +25,11 @@ def str_to_bool(str_input):
 
 
 # Load environment variables
-openai_api_key = os.environ.get("OPENAI_API_KEY")
+# openai_api_key = os.environ.get("OPENAI_API_KEY")
+
+# Perplexity key
+perplexity_api_key = (os.environ.get("PERPLEXITY_API_KEY");
+
 instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 enabled_file_upload_message = os.environ.get(
     "ENABLED_FILE_UPLOAD_MESSAGE", "Upload a file"
@@ -50,7 +58,10 @@ if azure_openai_endpoint and azure_openai_key:
         azure_endpoint=azure_openai_endpoint,
     )
 else:
-    client = openai.OpenAI(api_key=openai_api_key)
+    #client = openai.OpenAI(api_key=openai_api_key)
+    client = OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
+    
+
 
 # Add custom CSS for RTL support
 def add_custom_css():
