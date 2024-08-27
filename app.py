@@ -91,7 +91,7 @@ def get_perplexity_response(user_input):
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": user_input}
             ],
-            stream=False
+            stream=True
         )
         return response
     except Exception as e:
