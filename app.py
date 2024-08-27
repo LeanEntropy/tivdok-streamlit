@@ -28,7 +28,7 @@ def str_to_bool(str_input):
 # openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 # Perplexity key
-perplexity_api_key = (os.environ.get("PERPLEXITY_API_KEY");
+perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
 
 instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 enabled_file_upload_message = os.environ.get(
