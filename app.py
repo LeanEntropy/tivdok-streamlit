@@ -59,7 +59,7 @@ if azure_openai_endpoint and azure_openai_key:
     )
 else:
     #client = openai.OpenAI(api_key=openai_api_key)
-    client = OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
+    client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
     
 
 
