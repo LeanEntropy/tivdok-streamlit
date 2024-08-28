@@ -187,7 +187,7 @@ def format_annotation(text):
 #        stream.until_done()
 
 def run_stream(user_input, file, selected_assistant_id):
-    with st.empty():
+    with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
 
@@ -199,7 +199,7 @@ def run_stream(user_input, file, selected_assistant_id):
         message_placeholder.markdown(f'<div dir="rtl">{full_response}</div>', unsafe_allow_html=True)
 
     st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
-
+    st.session_state.in_progress = False
 
 
 
@@ -251,11 +251,21 @@ def load_chat_screen(assistant_title):
         st.subheader("Sources")
         st.write("Add your source items here")
 
-        st.subheader("Answer")
-        if st.session_state.chat_log:
-            last_assistant_msg = next((chat for chat in reversed(st.session_state.chat_log) if chat["name"] == "assistant"), None)
-            if last_assistant_msg:
-                st.markdown(f'<div dir="rtl">{last_assistant_msg["msg"]}</div>', unsafe_allow_html=True)
+        st.subheader("Chat")
+        for chat in st.session_state.chat_log:
+            with st.chat_message(chat["name"]):
+                st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
+
+        # Chat input in the main content area
+        user_msg = st.chat_input(
+            "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
+        )
+
+        if user_msg:
+            st.session_state.chat_log.append({"name": "user", "msg": user_msg})
+            run_stream(user_msg, None, None)
+            st.session_state.in_progress = False
+            st.rerun()
 
         st.subheader("Details")
         st.write("Add your details here")
@@ -282,19 +292,6 @@ def load_chat_screen(assistant_title):
         st.button("Search Videos")
         st.button("Generate Image")
 
-    # Chat input at the bottom
-    user_msg = st.chat_input(
-        "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
-    )
-
-    if user_msg:
-        st.session_state.chat_log.append({"name": "user", "msg": user_msg})
-        run_stream(user_msg, None, None)
-        st.session_state.in_progress = False
-        st.rerun()
-
-    render_chat()
-
 
 def main():
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
@@ -310,6 +307,11 @@ def main():
         else:
             st.error("Authentication is required but not properly configured.")
             return
+
+    # Add a reset button in the sidebar
+    if st.sidebar.button("Reset Chat"):
+        reset_chat()
+        st.rerun()
 
     load_chat_screen(assistant_title)
 
