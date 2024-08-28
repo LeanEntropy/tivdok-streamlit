@@ -51,6 +51,10 @@ perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
 
 instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 
+# Load the additional prompt instructions from environment variable
+#additional_prompt_instructions = os.environ.get("ADDITIONAL_PROMPT_INSTRUCTIONS", "")
+additional_prompt_instructions = "Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. Make sure the asnwer you provide is accurate. Always begin the answer with the correctness of the statement provided above."
+
 
 client = None
 
@@ -104,19 +108,21 @@ def add_custom_css():
 
 def get_perplexity_response(user_input):
     try:
+        # Combine the additional instructions with the user input
+        full_query = f"{additional_prompt_instructions}\n\n{user_input}"
+        
         response = client.chat.completions.create(
             model="llama-3.1-sonar-small-128k-online",  # or another appropriate model
             messages=[
                 {"role": "system", "content": instructions},
-                {"role": "user", "content": user_input}
+                {"role": "user", "content": full_query}  # Use the combined query here
             ],
             stream=True
         )
         return response
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
-        return None    
-    
+        return None  
     
     
 def parse_response(response):
