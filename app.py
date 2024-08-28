@@ -79,36 +79,6 @@ def add_custom_css():
         text-align: center;
         direction: rtl;
     }
-    .fact-check-container {
-        background-color: #f0f0f0;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    .fact-check-question {
-        font-size: 1.2em;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    .fact-check-answer {
-        font-size: 1.1em;
-        margin-bottom: 15px;
-    }
-    .fact-check-details {
-        font-size: 0.9em;
-    }
-    .sources-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .source-item {
-        background-color: #ffffff;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.8em;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -205,11 +175,11 @@ def run_stream(user_input, file, selected_assistant_id):
 
     st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
 
-
+    
 
 def display_fact_check_response(question, response):
-    # Parse the response (you might need to adjust this based on the actual response format)
-    # For this example, we'll assume the response is in a specific format
+    # Parse the response (adjust this based on the actual response format)
+    # This is a placeholder parsing logic
     answer = "Based on the information provided, it appears that Netanyahu did not personally appoint the personal physician to the Director General of Rafael, but rather Minister David Amsalem, who is close to Netanyahu, made the appointment."
     details = "Prof. Elon Pirkski, head of the surgical department and the general surgery department at Hadassah Ein Kerem Hospital in Jerusalem, was appointed to be a member of the Rafael board of directors. Pirkski is not Netanyahu's personal physician."
     sources = [
@@ -218,17 +188,18 @@ def display_fact_check_response(question, response):
         {"name": "themarker", "url": "https://www.themarker.com"}
     ]
 
-    st.markdown(f"""
-    <div class="fact-check-container" dir="rtl">
-        <div class="fact-check-question">{question}</div>
-        <div class="fact-check-answer">{answer}</div>
-        <div class="fact-check-details">{details}</div>
-        <div class="sources-container">
-            <strong>Sources:</strong>
-            {''.join([f'<span class="source-item">{source["name"]}</span>' for source in sources])}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown(f"<h3 style='text-align: right;'>{question}</h3>", unsafe_allow_html=True)
+    
+    st.markdown(f"<p style='text-align: right; font-weight: bold;'>{answer}</p>", unsafe_allow_html=True)
+    
+    st.markdown(f"<p style='text-align: right;'>{details}</p>", unsafe_allow_html=True)
+    
+    st.markdown("<p style='text-align: right;'><strong>:מקורות</strong></p>", unsafe_allow_html=True)
+    for source in sources:
+        st.markdown(f"<p style='text-align: right;'>{source['name']}</p>", unsafe_allow_html=True)
+    
+    st.markdown("---")
 
 
 
@@ -238,7 +209,8 @@ def render_chat():
         if chat["name"] == "user":
             with st.chat_message(chat["name"]):
                 st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
-        # The assistant's messages are now handled by display_fact_check_response
+        elif chat["name"] == "assistant":
+            display_fact_check_response("", chat["msg"])  # Pass empty string as question for stored responses
 
 
 
@@ -292,7 +264,6 @@ def load_chat_screen(assistant_title):
     )
 
     if user_msg:
-        render_chat()
         with st.chat_message("user"):
             st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
