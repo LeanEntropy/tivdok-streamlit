@@ -79,6 +79,32 @@ def add_custom_css():
         text-align: center;
         direction: rtl;
     }
+    .main-content {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .sidebar {
+        background-color: #f0f0f0;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .source-item {
+        background-color: #e0e0e0;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8em;
+    }
+    .stButton > button {
+        width: 100%;
+        margin-top: 10px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -161,27 +187,26 @@ def format_annotation(text):
 #        stream.until_done()
 
 def run_stream(user_input, file, selected_assistant_id):
-    with st.chat_message("Assistant"):
+    with st.empty():
         message_placeholder = st.empty()
         full_response = ""
-        
+
         for chunk in get_perplexity_response(user_input):
             if chunk.choices[0].delta.content is not None:
                 full_response += chunk.choices[0].delta.content
-                message_placeholder.markdown(full_response + "▌")
-        
-        message_placeholder.markdown(full_response)
-    
+                message_placeholder.markdown(f'<div dir="rtl">{full_response}▌</div>', unsafe_allow_html=True)
+
+        message_placeholder.markdown(f'<div dir="rtl">{full_response}</div>', unsafe_allow_html=True)
+
     st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
-    
 
 
 
 
-def render_chat():
-    for chat in st.session_state.chat_log:
-        with st.chat_message(chat["name"]):
-            st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
+#def render_chat():
+#    for chat in st.session_state.chat_log:
+#        with st.chat_message(chat["name"]):
+#            st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
 
 
 if "chat_log" not in st.session_state:
@@ -216,8 +241,30 @@ def reset_chat():
 def load_chat_screen(assistant_title):
     add_custom_css()  # Add RTL CSS
 
-    # Add sidebar with image and text
-    with st.sidebar:
+    st.title(assistant_title if assistant_title else "")
+
+    # Create two columns
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        # Main content area
+        st.subheader("Sources")
+        st.write("Add your source items here")
+
+        st.subheader("Answer")
+        if st.session_state.chat_log:
+            last_assistant_msg = next((chat for chat in reversed(st.session_state.chat_log) if chat["name"] == "assistant"), None)
+            if last_assistant_msg:
+                st.markdown(f'<div dir="rtl">{last_assistant_msg["msg"]}</div>', unsafe_allow_html=True)
+
+        st.subheader("Details")
+        st.write("Add your details here")
+
+        st.subheader("Related Information")
+        st.write("Add your related information here")
+
+    with col2:
+        # Sidebar content
         st.image("Fby2Jxqn_400x400.jpg", use_column_width=True)
         st.markdown("""
         <div class="centered-text">
@@ -227,18 +274,21 @@ def load_chat_screen(assistant_title):
         </div>
         """, unsafe_allow_html=True)
 
-    st.title(assistant_title if assistant_title else "")
+        st.subheader("Additional Images")
+        # Add placeholder for additional images
+        for _ in range(4):
+            st.image("https://via.placeholder.com/150", use_column_width=True)
 
+        st.button("Search Videos")
+        st.button("Generate Image")
+
+    # Chat input at the bottom
     user_msg = st.chat_input(
         "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
     )
 
     if user_msg:
-        render_chat()
-        with st.chat_message("user"):
-            st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
-
         run_stream(user_msg, None, None)
         st.session_state.in_progress = False
         st.rerun()
@@ -247,7 +297,6 @@ def load_chat_screen(assistant_title):
 
 
 def main():
-    # Simplify this function to use a single assistant title
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
 
     if authentication_required:
