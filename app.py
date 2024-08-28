@@ -79,31 +79,35 @@ def add_custom_css():
         text-align: center;
         direction: rtl;
     }
-    .main-content {
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 10px;
-    }
-    .sidebar {
+    .fact-check-container {
         background-color: #f0f0f0;
         padding: 20px;
         border-radius: 10px;
+        margin-bottom: 20px;
     }
-    .sources {
+    .fact-check-question {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .fact-check-answer {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+    .fact-check-details {
+        font-size: 0.9em;
+    }
+    .sources-container {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-top: 10px;
     }
     .source-item {
-        background-color: #e0e0e0;
+        background-color: #ffffff;
         padding: 5px 10px;
         border-radius: 5px;
         font-size: 0.8em;
-    }
-    .stButton > button {
-        width: 100%;
-        margin-top: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -187,26 +191,55 @@ def format_annotation(text):
 #        stream.until_done()
 
 def run_stream(user_input, file, selected_assistant_id):
-    with st.chat_message("assistant"):
+    with st.chat_message("Assistant"):
         message_placeholder = st.empty()
         full_response = ""
 
         for chunk in get_perplexity_response(user_input):
             if chunk.choices[0].delta.content is not None:
                 full_response += chunk.choices[0].delta.content
-                message_placeholder.markdown(f'<div dir="rtl">{full_response}▌</div>', unsafe_allow_html=True)
+                message_placeholder.markdown(full_response + "▌")
 
-        message_placeholder.markdown(f'<div dir="rtl">{full_response}</div>', unsafe_allow_html=True)
+        message_placeholder.empty()
+        display_fact_check_response(user_input, full_response)
 
     st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
-    st.session_state.in_progress = False
 
 
 
-#def render_chat():
-#    for chat in st.session_state.chat_log:
-#        with st.chat_message(chat["name"]):
-#            st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
+def display_fact_check_response(question, response):
+    # Parse the response (you might need to adjust this based on the actual response format)
+    # For this example, we'll assume the response is in a specific format
+    answer = "Based on the information provided, it appears that Netanyahu did not personally appoint the personal physician to the Director General of Rafael, but rather Minister David Amsalem, who is close to Netanyahu, made the appointment."
+    details = "Prof. Elon Pirkski, head of the surgical department and the general surgery department at Hadassah Ein Kerem Hospital in Jerusalem, was appointed to be a member of the Rafael board of directors. Pirkski is not Netanyahu's personal physician."
+    sources = [
+        {"name": "ynet", "url": "https://www.ynet.co.il"},
+        {"name": "kan.org", "url": "https://www.kan.org.il"},
+        {"name": "themarker", "url": "https://www.themarker.com"}
+    ]
+
+    st.markdown(f"""
+    <div class="fact-check-container" dir="rtl">
+        <div class="fact-check-question">{question}</div>
+        <div class="fact-check-answer">{answer}</div>
+        <div class="fact-check-details">{details}</div>
+        <div class="sources-container">
+            <strong>Sources:</strong>
+            {''.join([f'<span class="source-item">{source["name"]}</span>' for source in sources])}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+
+
+def render_chat():
+    for chat in st.session_state.chat_log:
+        if chat["name"] == "user":
+            with st.chat_message(chat["name"]):
+                st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
+        # The assistant's messages are now handled by display_fact_check_response
+
 
 
 if "chat_log" not in st.session_state:
@@ -239,42 +272,10 @@ def reset_chat():
     st.session_state.in_progress = False
 
 def load_chat_screen(assistant_title):
-    add_custom_css()  # Add RTL CSS
+    add_custom_css()
 
-    st.title(assistant_title if assistant_title else "")
-
-    # Create two columns
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        # Main content area
-        st.subheader("Sources")
-        st.write("Add your source items here")
-
-        st.subheader("Chat")
-        for chat in st.session_state.chat_log:
-            with st.chat_message(chat["name"]):
-                st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
-
-        # Chat input in the main content area
-        user_msg = st.chat_input(
-            "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
-        )
-
-        if user_msg:
-            st.session_state.chat_log.append({"name": "user", "msg": user_msg})
-            run_stream(user_msg, None, None)
-            st.session_state.in_progress = False
-            st.rerun()
-
-        st.subheader("Details")
-        st.write("Add your details here")
-
-        st.subheader("Related Information")
-        st.write("Add your related information here")
-
-    with col2:
-        # Sidebar content
+    # Add sidebar with image and text
+    with st.sidebar:
         st.image("Fby2Jxqn_400x400.jpg", use_column_width=True)
         st.markdown("""
         <div class="centered-text">
@@ -284,16 +285,27 @@ def load_chat_screen(assistant_title):
         </div>
         """, unsafe_allow_html=True)
 
-        st.subheader("Additional Images")
-        # Add placeholder for additional images
-        for _ in range(4):
-            st.image("https://via.placeholder.com/150", use_column_width=True)
+    st.title(assistant_title if assistant_title else "")
 
-        st.button("Search Videos")
-        st.button("Generate Image")
+    user_msg = st.chat_input(
+        "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
+    )
+
+    if user_msg:
+        render_chat()
+        with st.chat_message("user"):
+            st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
+        st.session_state.chat_log.append({"name": "user", "msg": user_msg})
+
+        run_stream(user_msg, None, None)
+        st.session_state.in_progress = False
+        st.rerun()
+
+    render_chat()
 
 
 def main():
+    # Simplify this function to use a single assistant title
     assistant_title = os.environ.get("ASSISTANT_TITLE", "AI Fact-Checker")
 
     if authentication_required:
@@ -307,11 +319,6 @@ def main():
         else:
             st.error("Authentication is required but not properly configured.")
             return
-
-    # Add a reset button in the sidebar
-    if st.sidebar.button("Reset Chat"):
-        reset_chat()
-        st.rerun()
 
     load_chat_screen(assistant_title)
 
