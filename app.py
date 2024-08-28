@@ -57,7 +57,9 @@ client = None
 client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
 
-
+# Initialize session state for logging
+if 'log_data' not in st.session_state:
+    st.session_state.log_data = []
 
 # Add custom CSS for RTL support
 def add_custom_css():
@@ -66,18 +68,6 @@ def add_custom_css():
     .stTextInput input {
         direction: rtl;
         text-align: right;
-    }
-    .stChatMessage {
-        direction: rtl;
-        text-align: right;
-    }
-    .stChatMessageContent {
-        direction: rtl;
-        text-align: right;
-    }
-    .centered-text {
-        text-align: center;
-        direction: rtl;
     }
     .fact-check-container {
         background-color: #f0f0f0;
@@ -94,9 +84,6 @@ def add_custom_css():
     .fact-check-answer {
         font-size: 1.1em;
         margin-bottom: 15px;
-    }
-    .fact-check-details {
-        font-size: 0.9em;
     }
     .sources-container {
         margin-top: 10px;
@@ -132,24 +119,27 @@ def get_perplexity_response(user_input):
     
     
 def parse_response(response):
-    # This is a placeholder. You need to implement the actual parsing logic
-    # based on the Perplexity API response format
-    try:
-        data = json.loads(response)
-        return {
-            "answer": data.get("answer", "No answer provided"),
-            "details": data.get("details", "No details available"),
-            "sources": data.get("sources", [])
-        }
-    except json.JSONDecodeError:
-        # If the response is not valid JSON, return a default structure
-        return {
-            "answer": response,
-            "details": "Unable to parse detailed response",
-            "sources": []
-        }    
-    
+    # Simple parsing based on expected content
+    lines = response.split('\n')
+    answer = lines[0] if lines else "No answer provided"
+    details = '\n'.join(lines[1:-1]) if len(lines) > 1 else "No details available"
+    sources = []
+    if lines and lines[-1].startswith("Sources:"):
+        sources_line = lines[-1].replace("Sources:", "").strip()
+        sources = [s.strip() for s in sources_line.split(',')]
+    return {
+        "answer": answer,
+        "details": details,
+        "sources": sources
+    }
 
+def log_response(user_input, raw_response):
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "user_query": user_input,
+        "raw_response": raw_response
+    }
+    st.session_state.log_data.append(log_entry)
 
 
 def create_thread(content, file):
@@ -214,13 +204,14 @@ def run_stream(user_input, file, selected_assistant_id):
             if chunk.choices[0].delta.content is not None:
                 full_response += chunk.choices[0].delta.content
 
+        # Log the raw response
+        log_response(user_input, full_response)
+        
         parsed_response = parse_response(full_response)
         st.session_state.current_response = {
             "question": user_input,
             "response": parsed_response
         }
-
-
 
 def display_fact_check_response():
     if 'current_response' in st.session_state:
@@ -237,11 +228,10 @@ def display_fact_check_response():
             <div class="fact-check-details">{details}</div>
             <div class="sources-container">
                 <strong>מקורות:</strong>
-                {''.join([f'<a href="{source["url"]}" target="_blank" class="source-item">{source["name"]}</a>' for source in sources])}
+                {' '.join([f'<span class="source-item">{source}</span>' for source in sources])}
             </div>
         </div>
         """, unsafe_allow_html=True)
-
 
 
 def render_chat():
@@ -251,6 +241,14 @@ def render_chat():
                 st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
 
 
+def download_logs():
+    log_json = json.dumps(st.session_state.log_data, indent=2)
+    st.download_button(
+        label="Download Logs",
+        data=log_json,
+        file_name=f"perplexity_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+        mime="application/json"
+    )
 
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = []
@@ -288,12 +286,15 @@ def load_chat_screen(assistant_title):
     with st.sidebar:
         st.image("Fby2Jxqn_400x400.jpg", use_column_width=True)
         st.markdown("""
-        <div class="centered-text">
+        <div style="text-align: center; direction: rtl;">
         <p>Experimental AI-based bot for political/historical fact-checking.</p>
         <p>בוט נסיוני מבוסס בינה מלאכותית לבדיקת עובדות בתחום הפוליטי/היסטורי.</p>
         <p>Developed and maintained by civax</p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add download logs button to sidebar
+        download_logs()
 
     st.title(assistant_title if assistant_title else "")
 
