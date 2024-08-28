@@ -79,6 +79,37 @@ def add_custom_css():
         text-align: center;
         direction: rtl;
     }
+    .fact-check-container {
+        background-color: #f0f0f0;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        direction: rtl;
+    }
+    .fact-check-question {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .fact-check-answer {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+    .fact-check-details {
+        font-size: 0.9em;
+    }
+    .sources-container {
+        margin-top: 10px;
+    }
+    .source-item {
+        display: inline-block;
+        background-color: #ffffff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8em;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -100,7 +131,23 @@ def get_perplexity_response(user_input):
     
     
     
-    
+def parse_response(response):
+    # This is a placeholder. You need to implement the actual parsing logic
+    # based on the Perplexity API response format
+    try:
+        data = json.loads(response)
+        return {
+            "answer": data.get("answer", "No answer provided"),
+            "details": data.get("details", "No details available"),
+            "sources": data.get("sources", [])
+        }
+    except json.JSONDecodeError:
+        # If the response is not valid JSON, return a default structure
+        return {
+            "answer": response,
+            "details": "Unable to parse detailed response",
+            "sources": []
+        }    
     
 
 
@@ -161,46 +208,39 @@ def format_annotation(text):
 #        stream.until_done()
 
 def run_stream(user_input, file, selected_assistant_id):
-    with st.chat_message("Assistant"):
-        message_placeholder = st.empty()
+    with st.spinner('מעבד את השאלה שלך...'):
         full_response = ""
-
         for chunk in get_perplexity_response(user_input):
             if chunk.choices[0].delta.content is not None:
                 full_response += chunk.choices[0].delta.content
-                message_placeholder.markdown(full_response + "▌")
 
-        message_placeholder.empty()
-        display_fact_check_response(user_input, full_response)
+        parsed_response = parse_response(full_response)
+        st.session_state.current_response = {
+            "question": user_input,
+            "response": parsed_response
+        }
 
-    st.session_state.chat_log.append({"name": "assistant", "msg": full_response})
 
-    
 
-def display_fact_check_response(question, response):
-    # Parse the response (adjust this based on the actual response format)
-    # This is a placeholder parsing logic
-    answer = "Based on the information provided, it appears that Netanyahu did not personally appoint the personal physician to the Director General of Rafael, but rather Minister David Amsalem, who is close to Netanyahu, made the appointment."
-    details = "Prof. Elon Pirkski, head of the surgical department and the general surgery department at Hadassah Ein Kerem Hospital in Jerusalem, was appointed to be a member of the Rafael board of directors. Pirkski is not Netanyahu's personal physician."
-    sources = [
-        {"name": "ynet", "url": "https://www.ynet.co.il"},
-        {"name": "kan.org", "url": "https://www.kan.org.il"},
-        {"name": "themarker", "url": "https://www.themarker.com"}
-    ]
+def display_fact_check_response():
+    if 'current_response' in st.session_state:
+        response = st.session_state.current_response
+        question = response['question']
+        answer = response['response']['answer']
+        details = response['response']['details']
+        sources = response['response']['sources']
 
-    st.markdown("---")
-    st.markdown(f"<h3 style='text-align: right;'>{question}</h3>", unsafe_allow_html=True)
-    
-    st.markdown(f"<p style='text-align: right; font-weight: bold;'>{answer}</p>", unsafe_allow_html=True)
-    
-    st.markdown(f"<p style='text-align: right;'>{details}</p>", unsafe_allow_html=True)
-    
-    st.markdown("<p style='text-align: right;'><strong>:מקורות</strong></p>", unsafe_allow_html=True)
-    for source in sources:
-        st.markdown(f"<p style='text-align: right;'>{source['name']}</p>", unsafe_allow_html=True)
-    
-    st.markdown("---")
-
+        st.markdown(f"""
+        <div class="fact-check-container">
+            <div class="fact-check-question">{question}</div>
+            <div class="fact-check-answer">{answer}</div>
+            <div class="fact-check-details">{details}</div>
+            <div class="sources-container">
+                <strong>מקורות:</strong>
+                {''.join([f'<a href="{source["url"]}" target="_blank" class="source-item">{source["name"]}</a>' for source in sources])}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 
@@ -209,8 +249,6 @@ def render_chat():
         if chat["name"] == "user":
             with st.chat_message(chat["name"]):
                 st.markdown(f'<div dir="rtl">{chat["msg"]}</div>', unsafe_allow_html=True)
-        elif chat["name"] == "assistant":
-            display_fact_check_response("", chat["msg"])  # Pass empty string as question for stored responses
 
 
 
@@ -259,20 +297,18 @@ def load_chat_screen(assistant_title):
 
     st.title(assistant_title if assistant_title else "")
 
+    render_chat()
+    display_fact_check_response()
+
     user_msg = st.chat_input(
         "טקסט לבדיקה", on_submit=disable_form, disabled=st.session_state.in_progress
     )
 
     if user_msg:
-        with st.chat_message("user"):
-            st.markdown(f'<div dir="rtl">{user_msg}</div>', unsafe_allow_html=True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
-
         run_stream(user_msg, None, None)
         st.session_state.in_progress = False
         st.rerun()
-
-    render_chat()
 
 
 def main():
