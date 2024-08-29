@@ -121,23 +121,23 @@ def get_perplexity_response(user_input):
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": full_query}  # Use the combined query here
             ],
-            max_tokens = 0,
-            temperature = 0,
-            top_p = 0.2,
-            return_citations = True,
-            return_images = True,
-            return_related_questions = False,
-            top_k = 0,
-            stream = True,
-            presence_penalty = 0,
-            frequency_penalty = 1
+            stream=True
             
         )
         return response
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return None  
-    
+
+# max_tokens = 0,
+#            temperature = 0,
+#            top_p = 0.2,
+#            return_citations = True,
+#            return_images = True,
+#            return_related_questions = False,
+#            top_k = 0, 
+# presence_penalty = 0,
+# frequency_penalty = 1   
     
 def parse_response(response):
     # Simple parsing based on expected content
