@@ -49,16 +49,20 @@ if authentication_required and "credentials" in st.secrets:
 # Perplexity key
 perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
 
-instructions = os.environ.get("RUN_INSTRUCTIONS", "")
+#instructions = os.environ.get("RUN_INSTRUCTIONS", "")
 
 # Load the additional prompt instructions from environment variable
+
+#instructions = os.environ.get("RUN_INSTRUCTIONS", "")
+instructions = "Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. Make sure the asnwer you provide is accurate. Always begin the answer with the correctness of the statement provided above."
+
 #additional_prompt_instructions = os.environ.get("ADDITIONAL_PROMPT_INSTRUCTIONS", "")
-additional_prompt_instructions = "Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. Make sure the asnwer you provide is accurate. Always begin the answer with the correctness of the statement provided above."
+additional_prompt_instructions = ""
+
 
 
 client = None
-
-    #client = openai.OpenAI(api_key=openai_api_key)
+#client = openai.OpenAI(api_key=openai_api_key)
 client = openai.OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
 
@@ -117,7 +121,17 @@ def get_perplexity_response(user_input):
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": full_query}  # Use the combined query here
             ],
-            stream=True
+            max_tokens = 0,
+            temperature = 0,
+            top_p = 0.2,
+            return_citations = True,
+            return_images = True,
+            return_related_questions = False,
+            top_k = 0,
+            stream = True,
+            presence_penalty = 0,
+            frequency_penalty = 1
+            
         )
         return response
     except Exception as e:
