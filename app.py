@@ -121,10 +121,7 @@ def get_perplexity_response(user_input):
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": full_query}  # Use the combined query here
             ],
-            stream=True,
-            temperature=0,
-            return_citations=True,
-            return_images=True
+            stream=True
         )
         return response
     except Exception as e:
