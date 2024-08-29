@@ -54,7 +54,7 @@ perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
 # Load the additional prompt instructions from environment variable
 
 #instructions = os.environ.get("RUN_INSTRUCTIONS", "")
-instructions = "Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. Make sure the asnwer you provide is accurate. Always begin the answer with the correctness of the statement provided above."
+instructions = "You are a an expert facts checker. Extract the claimes from any text given to you and check their accuracy. Provide a full and clear answer in Hebrew as if you were talking to a person, with correct citations links and a url to the most relevant image. Make sure the answer you provide is accurate. Always begin the answer with the correctness of the statement provided above."
 
 #additional_prompt_instructions = os.environ.get("ADDITIONAL_PROMPT_INSTRUCTIONS", "")
 additional_prompt_instructions = ""
@@ -121,8 +121,10 @@ def get_perplexity_response(user_input):
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": full_query}  # Use the combined query here
             ],
-            stream=True
-            
+            stream=True,
+            temperature=0,
+            return_citations=True,
+            return_images=True
         )
         return response
     except Exception as e:
