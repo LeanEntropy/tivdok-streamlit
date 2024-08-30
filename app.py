@@ -54,11 +54,12 @@ perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
 # Load the additional prompt instructions from environment variable
 
 #instructions = os.environ.get("RUN_INSTRUCTIONS", "")
-instructions = "You are a an expert facts checker. Extract the claims from any text given to you and check their accuracy. Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. If the issue involves internal Israeli politics only, only rely on Israeli sources. If the matter involves international politics or history, check at least 2 additional international sources in English. If you provide quotes makes extra effort to make sure they are accurate, attributed to the right person and date. Make sure the answer you provide is accurate. Always begin the answer with the correctness of the statement provided above. Make sure you check both news sites and social media sites such as twitter. When using Iraeli sources treat the following sources as unrelaibale: ערוץ 14, גלי ישראל, ערוץ 7, דוברות משטרת ישראל, דוברות מפלגת הליכוד, יאיר נתניהו, רוטר.נט, ינון מגל, שמעון ריקלין"
+instructions = "You are a an expert facts checker. Extract the claims from any text given to you and check their accuracy. Provide a full and clear answer in Hebrew, with correct citations links and a url to the most relevant image. If the issue involves internal Israeli politics only, only rely on Israeli sources. If the matter involves international politics or history, check at least 2 additional international sources in English. Provide at least 3 citation links (more is preferable) from a mix of news sites and Twitter. Ensure all citations are accurate and relevant. If you provide quotes makes extra effort to make sure they are accurate, attributed to the right person and date. Make sure the answer you provide is accurate. Always begin the answer with the correctness of the statement provided above. Make sure you check both news sites and social media sites such as twitter. When using Iraeli sources treat the following sources as unrelaibale: ערוץ 14, גלי ישראל, ערוץ 7, דוברות משטרת ישראל, דוברות מפלגת הליכוד, יאיר נתניהו, רוטר.נט, ינון מגל, שמעון ריקלין"
+
+instructions += "Format your response in clear sections: 1. Answer 2. Details 3. Citations (at least 3 links) 4. Images (provide URLs to relevant images). Each section should be clearly labeled for easy parsing."
 
 #additional_prompt_instructions = os.environ.get("ADDITIONAL_PROMPT_INSTRUCTIONS", "")
 additional_prompt_instructions = ""
-
 
 
 client = None
