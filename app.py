@@ -140,19 +140,34 @@ def get_perplexity_response(user_input):
 # frequency_penalty = 1   
     
 def parse_response(response):
-    # Simple parsing based on expected content
-    lines = response.split('\n')
-    answer = lines[0] if lines else "No answer provided"
-    details = '\n'.join(lines[1:-1]) if len(lines) > 1 else "No details available"
-    sources = []
-    if lines and lines[-1].startswith("Sources:"):
-        sources_line = lines[-1].replace("Sources:", "").strip()
-        sources = [s.strip() for s in sources_line.split(',')]
-    return {
-        "answer": answer,
-        "details": details,
-        "sources": sources
+    sections = response.split('\n\n')
+    parsed = {
+        "answer": "",
+        "details": "",
+        "citations": [],
+        "images": []
     }
+    
+    current_section = None
+    for section in sections:
+        if section.startswith("Answer:"):
+            current_section = "answer"
+            parsed["answer"] = section.replace("Answer:", "").strip()
+        elif section.startswith("Details:"):
+            current_section = "details"
+            parsed["details"] = section.replace("Details:", "").strip()
+        elif section.startswith("Citations:"):
+            current_section = "citations"
+            citations = section.replace("Citations:", "").strip().split('\n')
+            parsed["citations"] = [cit.strip() for cit in citations if cit.strip()]
+        elif section.startswith("Images:"):
+            current_section = "images"
+            images = section.replace("Images:", "").strip().split('\n')
+            parsed["images"] = [img.strip() for img in images if img.strip()]
+        elif current_section:
+            parsed[current_section] += "\n" + section
+
+    return parsed
 
 def log_response(user_input, raw_response):
     log_entry = {
@@ -240,19 +255,25 @@ def display_fact_check_response():
         question = response['question']
         answer = response['response']['answer']
         details = response['response']['details']
-        sources = response['response']['sources']
+        citations = response['response']['citations']
 
-        st.markdown(f"""
-        <div class="fact-check-container">
-            <div class="fact-check-question">{question}</div>
-            <div class="fact-check-answer">{answer}</div>
-            <div class="fact-check-details">{details}</div>
-            <div class="sources-container">
-                <strong>מקורות:</strong>
-                {' '.join([f'<span class="source-item">{source}</span>' for source in sources])}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("שאלה:")
+        st.write(question)
+        
+        st.subheader("תשובה:")
+        st.write(answer)
+        
+        st.subheader("פרטים נוספים:")
+        st.write(details)
+        
+        st.subheader("מקורות:")
+        cols = st.columns(3)  # Create 3 columns for citations
+        for i, citation in enumerate(citations):
+            with cols[i % 3]:
+                st.markdown(f"[![Source]({'https://placehold.co/600x400/png'})]({citation})")
+                st.caption(f"מקור {i+1}")
+
+        # Images are not displayed but you can add them here if needed
 
 
 def render_chat():
